@@ -7,7 +7,6 @@ __all__ = [
 from collections import defaultdict
 
 import torch
-from torch.nn.modules.module import ModuleAttributeError
 from fastNLP import DataSet
 from fastNLP import DataSetIter
 from fastNLP import SequentialSampler
@@ -43,26 +42,33 @@ class Predictor(object):
         data_iterator = DataSetIter(
             data, batch_size=self.batch_size, sampler=SequentialSampler(), as_numpy=False)
 
-        # predict_func = self.network.module.predict  # self.network.module for
-        # multi-GPU
+        #predict_func = self.network.module.predict  # self.network.module for multi-GPU
         try:
             predict_func = self.network.predict
-        except ModuleAttributeError:
+        except:
             predict_func = self.network.module.predict
 
         with torch.no_grad():
-            #            for batch_x, _ in tqdm(data_iterator):
+#            for batch_x, _ in tqdm(data_iterator):
             for batch_x, _ in tqdm(data_iterator, total=len(data_iterator)):
                 _move_dict_value_to_device(batch_x, _, device=network_device)
                 refined_batch_x = _build_args(predict_func, **batch_x)
                 prediction = predict_func(**refined_batch_x)
+                
+                # torch.max(torch.nn.Softmax(dim=-1)(prediction['prob']), -1)[0]
+                
                 if seq_len_field_name is not None:
                     seq_lens = batch_x[seq_len_field_name].tolist()
+                
+                from scipy.stats import entropy
 
                 for key, value in prediction.items():
-                    value = value.cpu().numpy()
-                    if len(value.shape) == 1 or (
-                            len(value.shape) == 2 and value.shape[1] == 1):
+                    if key == 'prob':
+                        value = torch.max(torch.nn.Softmax(dim=-1)(prediction['prob']), -1)[0].cpu().numpy()
+                        z = [entropy(item.cpu().numpy()) for item in torch.nn.Softmax(dim=-1)(prediction['prob'])[0]] # 0 is the most certain
+                    else:
+                        value = value.cpu().numpy()
+                    if len(value.shape) == 1 or (len(value.shape) == 2 and value.shape[1] == 1):
                         batch_output[key].extend(value.tolist())
                     else:
                         if seq_len_field_name is not None:
@@ -73,3 +79,15 @@ class Predictor(object):
                         else:
                             batch_output[key].append(value)
         return batch_output
+
+
+
+
+
+
+
+
+
+
+
+
