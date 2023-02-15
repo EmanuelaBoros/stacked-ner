@@ -1,9 +1,0 @@
-torch
-flair
-nltk
-spacy
-transformers
-tqdm
-numpy
-fastNLP
-spacy_langdetect
