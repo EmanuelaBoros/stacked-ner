@@ -6,19 +6,20 @@ Training:
 
 ```
 
-CUDA_VISIBLE_DEVICES=1,2,3 python main.py 
---directory TEMP_MODEL # path to save the model; predictions on test/dev will be automatically saved here at the end of training
---pre_trained_model PRETRAINED_MODEL_NAME #bert-base-cased
---train_dataset train.tsv 
---test_dataset test.tsv 
---dev_dataset valid.tsv 
---batch_size 4 
---do_train 
---no_cpu 5
---language french #for CamemBERT; english for other models
---model stacked # or bert 
---num_layers 2 #2 Transformer layers
+CUDA_VISIBLE_DEVICES=1,2,3 python main.py \
+--directory TEMP_MODEL \ 
+--pre_trained_model bert-base-cased
+--train_dataset train.tsv \
+--test_dataset test.tsv \
+--dev_dataset valid.tsv \
+--batch_size 4 \
+--do_train \
+--no_cpu 5 \
+--language english \
+--model bert \
+--num_layers 2
 ```
+TEMP_MODEL: # path to save the model; predictions on test/dev will be automatically saved here at the end of training
 
 Predicting:
 ```
