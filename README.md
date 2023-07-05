@@ -1,7 +1,5 @@
 #### Run the code
 
-BERT models need to be dowloaded (with the exception of CamemBERT)
-
 Training:
 
 ```
